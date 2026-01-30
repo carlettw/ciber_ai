@@ -1,38 +1,44 @@
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer
-} from 'recharts'
-import { useState } from "react"
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
+import { useState } from "react";
 
 const data = [
-  { name: 'Mon', risk: 2 },
-  { name: 'Tue', risk: 5 },
-  { name: 'Wed', risk: 3 },
-  { name: 'Thu', risk: 6 },
-  { name: 'Fri', risk: 4 },
-]
-const [url, setUrl] = useState("")
-const [result, setResult] = useState(null)
-const [loading, setLoading] = useState(false)
+  { name: "Mon", risk: 2 },
+  { name: "Tue", risk: 5 },
+  { name: "Wed", risk: 3 },
+  { name: "Thu", risk: 6 },
+  { name: "Fri", risk: 4 },
+];
 
 const scanSite = async () => {
-  if (!url) return alert("URL kiriting")
+  if (!url) return alert("URL kiriting");
 
-  setLoading(true)
+  setLoading(true);
   try {
-    const res = await fetch("http://127.0.0.1:8000/scan", {
+    const res = await fetch("http://127.0.0.1:8000/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
-    })
-    const data = await res.json()
-    setResult(data)
+    });
+    const data = await res.json();
+    setResult(data);
   } catch (e) {
-    alert("Backend bilan aloqa yo‘q")
+    alert("Backend bilan aloqa yo‘q");
   }
-  setLoading(false)
-}
+  setLoading(false);
+};
 
 export default function App() {
+  const [url, setUrl] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   return (
     <div className="min-h-screen flex bg-gray-100">
       {/* Sidebar */}
@@ -90,5 +96,5 @@ export default function App() {
         </div>
       </main>
     </div>
-  )
+  );
 }
