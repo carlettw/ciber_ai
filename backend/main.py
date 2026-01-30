@@ -2,62 +2,72 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 
-app = FastAPI()
+app = FastAPI(title="Cyber Security MVP")
 
-# Frontend (Vite) uchun CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/")
-def root():
-    return {"status": "Backend ishlayapti"}
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}
 
-@app.post("/scan")
-def scan_site(url: str):
-    report = {
+# 🔐 REAL YENGIL SECURITY TEST
+@app.post("/api/light-scan")
+def light_scan(data: dict):
+    url = data.get("url")
+
+    if not url:
+        return {"success": False, "message": "URL kiritilmadi"}
+
+    results = {
         "url": url,
-        "issues": []
+        "https": False,
+        "missing_headers": [],
+        "risk_level": "low"
     }
 
+    # 1️⃣ HTTPS tekshirish
+    if url.startswith("https://"):
+        results["https"] = True
+    else:
+        results["risk_level"] = "medium"
+
+    # 2️⃣ Security headers tekshirish
     try:
         response = requests.get(url, timeout=5)
         headers = response.headers
 
-        # HTTPS tekshiruv
-        if not url.startswith("https://"):
-            report["issues"].append({
-                "level": "high",
-                "title": "HTTPS yo‘q",
-                "description": "Ma'lumotlar shifrlanmagan holda uzatilmoqda"
-            })
+        required_headers = [
+            "Content-Security-Policy",
+            "X-Frame-Options",
+            "X-Content-Type-Options",
+            "Strict-Transport-Security",
+            "Referrer-Policy"
+        ]
 
-        # CSP header
-        if "Content-Security-Policy" not in headers:
-            report["issues"].append({
-                "level": "medium",
-                "title": "CSP yo‘q",
-                "description": "XSS hujumlarga ochiqlik bo‘lishi mumkin"
-            })
+        for h in required_headers:
+            if h not in headers:
+                results["missing_headers"].append(h)
 
-        # Clickjacking himoyasi
-        if "X-Frame-Options" not in headers:
-            report["issues"].append({
-                "level": "medium",
-                "title": "X-Frame-Options yo‘q",
-                "description": "Sayt iframe ichida ochilishi mumkin"
-            })
-
-        report["server"] = headers.get("Server", "Noma'lum")
-
-        return report
+        if len(results["missing_headers"]) > 2:
+            results["risk_level"] = "high"
 
     except Exception as e:
         return {
-            "error": "Saytga ulanib bo‘lmadi",
-            "details": str(e)
+            "success": False,
+            "message": "Saytga ulanishda xato",
+            "error": str(e)
         }
+
+    return {
+        "success": True,
+        "scan_result": results
+    }
+@app.get("/")
+def root():
+    return {"message": "Cyber Security MVP Backend ishlayapti"}
