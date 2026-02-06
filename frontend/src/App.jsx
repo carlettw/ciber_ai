@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import {
   ResponsiveContainer,
   LineChart,
@@ -8,9 +7,6 @@ import {
   Tooltip,
 } from "recharts";
 import { useState } from "react";
-=======
-import { useState } from "react"
->>>>>>> 0e93f95 (update)
 
 const data = [
   { name: "Mon", risk: 2 },
